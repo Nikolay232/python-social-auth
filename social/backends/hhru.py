@@ -30,7 +30,7 @@ class HhruOAuth2(BaseOAuth2):
             raise Exception(self)
 
     def get_user_details(self, response):
-        username = ''.join(('hhru_', response.get('email', '').split('@')[0], '_', str(response.get('id'))))
+        username = ''.join(('hhru_', str(response.get('id'))))
         return {'username': username,
                 'email': response.get('email'),
                 'first_name': response.get('first_name'),
