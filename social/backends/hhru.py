@@ -18,7 +18,7 @@ from social.backends.oauth import BaseOAuth2
 class HhruOAuth2(BaseOAuth2):
     """HH.ru OAuth2 support"""
     name = 'hhru-oauth2'
-    AUTHORIZATION_URL = 'https://m.hh.ru/oauth/authorize'
+    AUTHORIZATION_URL = 'https://hh.ru/oauth/authorize'
     ACCESS_TOKEN_URL = 'https://m.hh.ru/oauth/token'
     ACCESS_TOKEN_METHOD = 'POST'
     ID_KEY = 'id'
@@ -45,3 +45,4 @@ class HhruOAuth2(BaseOAuth2):
         data = urllib2.urlopen(request).read()
 
         return json.loads(data)
+
