@@ -19,7 +19,7 @@ class HhruOAuth2(BaseOAuth2):
     """HH.ru OAuth2 support"""
     name = 'hhru-oauth2'
     AUTHORIZATION_URL = 'https://hh.ru/oauth/authorize'
-    ACCESS_TOKEN_URL = 'https://m.hh.ru/oauth/token'
+    ACCESS_TOKEN_URL = 'https://hh.ru/oauth/token'
     ACCESS_TOKEN_METHOD = 'POST'
     ID_KEY = 'id'
 
@@ -41,7 +41,8 @@ class HhruOAuth2(BaseOAuth2):
     def user_data(self, access_token, response, *args, **kwargs):
         """Loads user data from service"""
         request = urllib2.Request("http://api.hh.ru/me",
-                                  headers={"Authorization": "Bearer {token}".format(token=access_token)})
+                                  headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                           "User-Agent": self.get_user_agent()})
         data = urllib2.urlopen(request).read()
 
         return json.loads(data)

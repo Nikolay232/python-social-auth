@@ -12,6 +12,7 @@ class BaseAuth(object):
     ID_KEY = None
     EXTRA_DATA = None
     REQUIRES_EMAIL_VALIDATION = False
+    DEFAULT_REQUEST_USER_AGENT = 'ewd-social-auth/1.0'
 
     def __init__(self, strategy=None, redirect_uri=None, *args, **kwargs):
         self.strategy = strategy
@@ -26,6 +27,9 @@ class BaseAuth(object):
     def setting(self, name, default=None):
         """Return setting value from strategy"""
         return self.strategy.setting(name, default=default, backend=self)
+
+    def get_user_agent(self):
+        return self.setting('REQUEST_USER_AGENT') or self.DEFAULT_REQUEST_USER_AGENT
 
     def auth_url(self):
         """Must return redirect URL to auth provider"""
@@ -184,6 +188,7 @@ class BaseAuth(object):
     def request(self, url, method='GET', *args, **kwargs):
         kwargs.setdefault('timeout', self.setting('REQUESTS_TIMEOUT') or
                                      self.setting('URLOPEN_TIMEOUT'))
+        kwargs['headers']['User-Agent'] = self.get_user_agent()
         try:
             response = request(method, url, *args, **kwargs)
         except ConnectionError as err:
