@@ -47,12 +47,12 @@ def get_packages():
     return packages
 
 
-requires = ['requests>=1.1.0', 'oauthlib>=0.3.8,<=2.1.0', 'six>=1.2.0']
+requires = ['requests>=1.1.0,<=2.20.1', 'oauthlib>=0.3.8,<=2.1.0', 'six>=1.2.0']
 if PY3:
     requires += ['python3-openid>=3.0.1',
                  'requests-oauthlib>=0.3.0,<0.3.2']
 else:
-    requires += ['python-openid>=2.2', 'requests-oauthlib>=0.3.0']
+    requires += ['python-openid>=2.2,<=2.2.5', 'requests-oauthlib>=0.3.0,<=1.0.0']
 
 
 setup(name='python-social-auth',
