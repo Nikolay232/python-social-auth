@@ -23,12 +23,6 @@ class HhruOAuth2(BaseOAuth2):
     ACCESS_TOKEN_METHOD = 'POST'
     ID_KEY = 'id'
 
-    def auth_complete(self, *args, **kwargs):
-        try:
-            return super(HhruOAuth2, self).auth_complete(*args, **kwargs)
-        except urllib2.HTTPError:
-            raise Exception(self)
-
     def get_user_details(self, response):
         username = ''.join(('hhru_', str(response.get('id'))))
         return {'username': username,
