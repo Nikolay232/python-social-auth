@@ -44,7 +44,7 @@ class HhruOAuth2(BaseOAuth2):
                                                "User-Agent": self.get_user_agent()})
             data = urllib2.urlopen(request).read()
 
-        except HTTPError as ex:
+        except urllib2.HTTPError as ex:
             logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
             raise
 
