@@ -39,14 +39,39 @@ class HhruOAuth2(BaseOAuth2):
     def user_data(self, access_token, response, *args, **kwargs):
         """Loads user data from service"""
         try:
-            request = urllib2.Request("http://api.hh.ru/me",
-                                      headers={"Authorization": "Bearer {token}".format(token=access_token),
-                                               "User-Agent": self.get_user_agent()})
-            data = urllib2.urlopen(request).read()
-
+            data = fetch_request("http://api.hh.ru/me",
+                          headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                   "User-Agent": self.get_user_agent()})
         except urllib2.HTTPError as ex:
             logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
             raise
 
-        return json.loads(data)
+        json_data = json.loads(data)
+        if 'errors' in json_data:
+            if all([json_data['errors'][0].get('type') == 'manager_accounts',
+                    json_data['errors'][0].get('value') == 'used_manager_account_forbidden']):
+                try:
+                    data = fetch_request("http://api.hh.ru/manager_accounts/mine",
+                                         headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                                  "User-Agent": self.get_user_agent()})
+                except urllib2.HTTPError as ex:
+                    logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
+                    raise
+                managers = json.loads(data)
+                if managers.get('primary_account_id') and not managers.get('is_primary_account_blocked'):
+                    manager_id = managers.get('primary_account_id')
+                else:
+                    manager_id = managers['items'][0]['id']
 
+                data = fetch_request("http://api.hh.ru/manager_accounts/mine",
+                                     headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                              "User-Agent": self.get_user_agent(),
+                                              " X-Manager-Account-Id": manager_id})
+                json_data = json.loads(data)
+
+        return json_data
+
+def fetch_request(url, headers={}):
+    request = urllib2.Request(url, headers=headers)
+    data = urllib2.urlopen(request).read()
+    return data
