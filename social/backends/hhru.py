@@ -40,8 +40,8 @@ class HhruOAuth2(BaseOAuth2):
         """Loads user data from service"""
         try:
             data = fetch_request("http://api.hh.ru/me",
-                          headers={"Authorization": "Bearer {token}".format(token=access_token),
-                                   "User-Agent": self.get_user_agent()})
+                                 headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                          "User-Agent": self.get_user_agent()})
         except urllib2.HTTPError as ex:
             logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
             raise
@@ -62,14 +62,18 @@ class HhruOAuth2(BaseOAuth2):
                     manager_id = managers.get('primary_account_id')
                 else:
                     manager_id = managers['items'][0]['id']
-
-                data = fetch_request("http://api.hh.ru/manager_accounts/mine",
-                                     headers={"Authorization": "Bearer {token}".format(token=access_token),
-                                              "User-Agent": self.get_user_agent(),
-                                              " X-Manager-Account-Id": manager_id})
+                try:
+                    data = fetch_request("http://api.hh.ru/me",
+                                         headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                                  "User-Agent": self.get_user_agent(),
+                                                  "X-Manager-Account-Id": manager_id})
+                except urllib2.HTTPError as ex:
+                    logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
+                    raise
                 json_data = json.loads(data)
 
         return json_data
+
 
 def fetch_request(url, headers={}):
     request = urllib2.Request(url, headers=headers)
