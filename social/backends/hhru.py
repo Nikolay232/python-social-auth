@@ -42,35 +42,43 @@ class HhruOAuth2(BaseOAuth2):
             data = fetch_request("http://api.hh.ru/me",
                                  headers={"Authorization": "Bearer {token}".format(token=access_token),
                                           "User-Agent": self.get_user_agent()})
+
         except urllib2.HTTPError as ex:
             logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
-            raise
 
-        json_data = json.loads(data)
-        if 'errors' in json_data:
-            if all([json_data['errors'][0].get('type') == 'manager_accounts',
-                    json_data['errors'][0].get('value') == 'used_manager_account_forbidden']):
-                try:
-                    data = fetch_request("http://api.hh.ru/manager_accounts/mine",
-                                         headers={"Authorization": "Bearer {token}".format(token=access_token),
-                                                  "User-Agent": self.get_user_agent()})
-                except urllib2.HTTPError as ex:
-                    logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
-                    raise
-                managers = json.loads(data)
-                if managers.get('primary_account_id') and not managers.get('is_primary_account_blocked'):
-                    manager_id = managers.get('primary_account_id')
-                else:
-                    manager_id = managers['items'][0]['id']
-                try:
-                    data = fetch_request("http://api.hh.ru/me",
-                                         headers={"Authorization": "Bearer {token}".format(token=access_token),
-                                                  "User-Agent": self.get_user_agent(),
-                                                  "X-Manager-Account-Id": manager_id})
-                except urllib2.HTTPError as ex:
-                    logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
-                    raise
-                json_data = json.loads(data)
+            json_data = json.loads(ex.read())
+
+            if 'errors' in json_data:
+                if all([json_data['errors'][0].get('type') == 'manager_accounts',
+                        json_data['errors'][0].get('value') == 'used_manager_account_forbidden']):
+                    try:
+                        data = fetch_request("http://api.hh.ru/manager_accounts/mine",
+                                             headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                                      "User-Agent": self.get_user_agent()})
+
+                    except urllib2.HTTPError as ex:
+                        logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
+                        managers = json_data['errors'][0]['allowed_accounts']
+                        print managers
+                        print type(managers)
+                        manager_id = managers[0]['id']
+                    else:
+                        managers = json.loads(data)
+
+                        if managers.get('primary_account_id') and not managers.get('is_primary_account_blocked'):
+                            manager_id = managers.get('primary_account_id')
+                        else:
+                            manager_id = managers['items'][0]['id']
+
+                    try:
+                        data = fetch_request("http://api.hh.ru/me",
+                                             headers={"Authorization": "Bearer {token}".format(token=access_token),
+                                                      "User-Agent": self.get_user_agent(),
+                                                      "X-Manager-Account-Id": manager_id})
+                    except urllib2.HTTPError as ex:
+                        logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
+                        raise
+                    json_data = json.loads(data)
 
         return json_data
 
