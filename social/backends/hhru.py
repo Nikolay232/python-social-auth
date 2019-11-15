@@ -79,6 +79,8 @@ class HhruOAuth2(BaseOAuth2):
                         logger.error("HTTPError. Token: {0}. Reason: {1}".format(access_token, ex))
                         raise
                     json_data = json.loads(data)
+        else:
+            json_data = json.loads(data)
 
         return json_data
 
